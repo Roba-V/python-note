@@ -7,7 +7,7 @@ import sqlalchemy.orm as orm
 from docutils.core import publish_parts
 from jinja2 import Environment
 from jinja2.loaders import PackageLoader
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 from webdispatch import MethodDispatcher
 from webdispatch.urldispatcher import URLDispatcher
@@ -66,19 +66,23 @@ def page_view(request):
     page_name = request.urlvars['page_name']
     edit_url = request.environ['webdispatch.urlgenerator'] \
         .generate('page_edit', page_name=page_name)
-    page = DBSession.query(Page).filter(Page.page_name == page_name).one()
-    tmpl = env.get_template('page.html')
-    print(page.page_name)
-    print(page.html_contents)
+    try:
+        page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+        tmpl = env.get_template('page.html')
 
-    return tmpl.render(page=page, edit_url=edit_url)
+        return tmpl.render(page=page, edit_url=edit_url)
+    except NoResultFound:
+        return HTTPFound(location=edit_url)
 
 
 @wsgify
 def page_edit_form(request):
     """wiki を編集するページ。"""
     page_name = request.urlvars['page_name']
-    page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    try:
+        page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    except NoResultFound:
+        page = Page(page_name=page_name, contents="")
     tmpl = env.get_template('page_edit.html')
 
     return tmpl.render(page=page)
@@ -87,7 +91,12 @@ def page_edit_form(request):
 @wsgify
 def page_update(request):
     page_name = request.urlvars['page_name']
-    page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    try:
+        page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    except NoResultFound:
+        page = Page(page_name=page_name, contents="")
+        DBSession.add(page)
+
     page.contents = request.params['contents']
     location = request.environ['webdispatch.urlgenerator'] \
         .generate('page', page_name=page_name)
