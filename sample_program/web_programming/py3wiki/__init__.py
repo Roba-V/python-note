@@ -9,6 +9,7 @@ from jinja2 import Environment
 from jinja2.loaders import PackageLoader
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
+from webdispatch import MethodDispatcher
 from webdispatch.urldispatcher import URLDispatcher
 from webob.dec import wsgify
 from webob.exc import HTTPFound
@@ -61,12 +62,42 @@ def sqla_transaction(req, app):
 
 @wsgify
 def page_view(request):
+    """wiki を表示するページ。"""
     page_name = request.urlvars['page_name']
-    # edit_url = request.environ['webdispatch.urlgenerator'] \
-    #     .generate('page_edit', page_name=page_name)
+    edit_url = request.environ['webdispatch.urlgenerator'] \
+        .generate('page_edit', page_name=page_name)
     page = DBSession.query(Page).filter(Page.page_name == page_name).one()
     tmpl = env.get_template('page.html')
+    print(page.page_name)
+    print(page.html_contents)
+
+    return tmpl.render(page=page, edit_url=edit_url)
+
+
+@wsgify
+def page_edit_form(request):
+    """wiki を編集するページ。"""
+    page_name = request.urlvars['page_name']
+    page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    tmpl = env.get_template('page_edit.html')
+
     return tmpl.render(page=page)
+
+
+@wsgify
+def page_update(request):
+    page_name = request.urlvars['page_name']
+    page = DBSession.query(Page).filter(Page.page_name == page_name).one()
+    page.contents = request.params['contents']
+    location = request.environ['webdispatch.urlgenerator'] \
+        .generate('page', page_name=page_name)
+
+    return HTTPFound(location=location)
+
+
+page_edit = MethodDispatcher()
+page_edit.register_app('get', page_edit_form)
+page_edit.register_app('post', page_update)
 
 
 def make_app():
@@ -79,6 +110,7 @@ def make_app():
     application.add_url('css', '/css/*', css_app)
     application.add_url('img', '/img/*', img_app)
     application.add_url('page', '/{page_name}', page_view)
+    application.add_url('page_edit', '/{page_name}/edit', page_edit)
     application.add_url('top', '/', HTTPFound(location='FrontPage'))
 
     application = sqla_transaction(application)
