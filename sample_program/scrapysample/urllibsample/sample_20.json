@@ -1,0 +1,31 @@
+{
+  "store": {
+    "book": [
+      {
+        "category": "技術",
+        "author": "Tom",
+        "title": "初めてのPython",
+        "price": 4950
+      },
+      {
+        "category": "技術",
+        "author": "Lucy",
+        "title": "機械学習",
+        "price": 5320,
+        "isbn": "4-3256-3125-23"
+      },
+      {
+        "category": "技術",
+        "author": "Casstiel",
+        "title": "Deep Learning",
+        "price": 6980,
+        "isbn": "0-3249-54823-4"
+      }
+    ],
+    "bicycle": {
+      "color": "black",
+      "price": 150000,
+      "author": "God"
+    }
+  }
+}
