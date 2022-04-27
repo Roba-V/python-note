@@ -1,6 +1,6 @@
 import scrapy
 
-from scrapysample.items import ScrapysampleItem
+from ..items import ScrapysampleItem
 
 
 class Spider3Spider(scrapy.Spider):

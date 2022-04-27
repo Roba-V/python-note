@@ -63,6 +63,7 @@ NEWSPIDER_MODULE = 'scrapysample.spiders'
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'scrapysample.pipelines.ScrapysamplePipeline': 300,
+    'scrapysample.pipelines.DownloadImgPipeline': 301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
