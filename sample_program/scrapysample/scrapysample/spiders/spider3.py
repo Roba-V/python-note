@@ -8,6 +8,9 @@ class Spider3Spider(scrapy.Spider):
     allowed_domains = ['category.dangdang.com']
     start_urls = ['https://category.dangdang.com/cp01.01.00.00.00.00.html']
 
+    base_url = 'https://category.dangdang.com/pg'
+    page = 1
+
     def parse(self, response):
         # piplines  データをダウンロードする
         # items     データ構造を定義
@@ -27,3 +30,10 @@ class Spider3Spider(scrapy.Spider):
             book = ScrapysampleItem(src=src, name=name, price=price)
 
             yield book
+
+        if self.page < 100:
+            self.page = self.page + 1
+            url = self.base_url + str(self.page) + '-cp01.01.00.00.00.00.html'
+
+            # GET 通信
+            yield scrapy.Request(url=url, callback=self.parse)

@@ -32,7 +32,7 @@ def down_load(arg_content):
         name = name_list[i]
         src = src_list[i]
         url = 'https:' + src
-        urllib.request.urlretrieve(url=url, filename='imgs/' + name + '.jpg')
+        urllib.request.urlretrieve(url=url, filename='books/' + name + '.jpg')
 
 
 if __name__ == '__main__':

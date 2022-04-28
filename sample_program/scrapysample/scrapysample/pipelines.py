@@ -28,7 +28,7 @@ class DownloadImgPipeline:
 
     def process_item(self, item, spider):
         url = 'http:' + item.get('src')
-        filename = './books' + item.get('name') + '.jpg'
+        filename = './books/' + item.get('name') + '.jpg'
 
         urllib.request.urlretrieve(url=url, filename=filename)
 
